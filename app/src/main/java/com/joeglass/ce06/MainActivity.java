@@ -43,9 +43,7 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.download){
             return true;
         }else {
-
             return super.onOptionsItemSelected(item);
         }
-
     }
 }
