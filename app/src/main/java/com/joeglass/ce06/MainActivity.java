@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         FrameLayout frameLayout = new FrameLayout(this);
         frameLayout.setId(CONTENT_VIEW_ID);
         setContentView(frameLayout, new FrameLayout.LayoutParams(
