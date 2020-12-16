@@ -8,11 +8,18 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.joeglass.ce06.dummy.DummyContent;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A fragment representing a list of Items.
@@ -54,7 +61,28 @@ public class ItemFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
 
-        // Set the adapter
+        getImageFiles(view);
+        return view;
+    }
+
+    public void getImageFiles(View view){
+        File filePath = Objects.requireNonNull(getContext()).getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (filePath.exists()){
+            File[] files =filePath.listFiles();
+            assert files != null;
+            if (files.length>0){
+                for (File file : files) {
+                    Log.d("Files", "FileName:" + file.getName());
+                }
+                setAdapter(view,files);
+            }
+
+        }
+
+
+    }
+
+    public void setAdapter(View view, File[] files){
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
@@ -62,9 +90,9 @@ public class ItemFragment extends Fragment {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+                recyclerView.addItemDecoration(new GridSpacingItemDecoration(1,0,false));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS));
+            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(files,getActivity()));
         }
-        return view;
     }
 }
