@@ -3,9 +3,13 @@ package com.joeglass.ce06;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +25,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+
+import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DummyItem}.
@@ -45,12 +51,27 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-
+        Bitmap bitmap = null;
         try {
-            holder.imageView.setImageBitmap(loadImageBitmap(mValues[position]));
+            bitmap = loadImageBitmap(mValues[position]);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+
+        holder.imageView.setImageBitmap(ThumbnailUtils.extractThumbnail(bitmap,660,660));
+        Bitmap finalBitmap = bitmap;
+        holder.imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                intent.setDataAndType(Uri.parse(MediaStore.Images.Media.insertImage(context.getContentResolver(), finalBitmap, null, null)), "image/*");
+                intent.setFlags(FLAG_GRANT_READ_URI_PERMISSION);
+                context.startActivity(intent);
+            }
+        });
 
     }
 
@@ -94,7 +115,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         return ous.toByteArray();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public final View mView;
         public final ImageView imageView;
 
@@ -102,7 +123,12 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             super(view);
             mView = view;
             imageView =  view.findViewById(R.id.image);
+            imageView.setOnClickListener(this);
         }
 
+        @Override
+        public void onClick(View view) {
+
+        }
     }
 }

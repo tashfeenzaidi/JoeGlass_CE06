@@ -90,7 +90,7 @@ public class ItemFragment extends Fragment {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-                recyclerView.addItemDecoration(new GridSpacingItemDecoration(1,0,false));
+//                recyclerView.addItemDecoration(new GridSpacingItemDecoration(0,0,false));
             }
             recyclerView.setAdapter(new MyItemRecyclerViewAdapter(files,getActivity()));
         }
