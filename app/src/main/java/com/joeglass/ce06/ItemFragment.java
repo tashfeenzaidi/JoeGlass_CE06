@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.joeglass.ce06.dummy.DummyContent;
 
@@ -74,13 +75,8 @@ public class ItemFragment extends Fragment {
     public File[] getImageFiles(){
         File filePath = Objects.requireNonNull(getContext()).getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         if (filePath.exists()){
-            files = filePath.listFiles();
-            assert files != null;
-            if (files.length>0){
-                for (File file : files) {
-                    Log.d("Files", "FileName:" + file.getName());
-                }
-               return files;
+            if (Objects.requireNonNull(filePath.listFiles()).length>0){
+               return  filePath.listFiles();
             }
 
         }
@@ -91,6 +87,8 @@ public class ItemFragment extends Fragment {
 
     public void setAdapter( File[] files){
             Context context = view.getContext();
+            TextView textView = view.findViewById(R.id.label);
+            textView.setVisibility(View.INVISIBLE);
             recyclerView = view.findViewById(R.id.list);
             recyclerView.setVisibility(View.VISIBLE);
 
@@ -106,12 +104,15 @@ public class ItemFragment extends Fragment {
 
     public void updateList(){
         if (files == null){
-            if (getImageFiles() != null){
-                setAdapter(getImageFiles());
+            files = getImageFiles();
+
+            if (files != null){
+                setAdapter(files);
             }
         }else {
-            getImageFiles();
-            adapter.notifyDataSetChanged();
+
+            adapter = new MyItemRecyclerViewAdapter(getImageFiles(),view.getContext());
+            recyclerView.setAdapter(adapter);
         }
     }
 }

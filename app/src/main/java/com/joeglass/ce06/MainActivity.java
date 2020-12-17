@@ -46,8 +46,6 @@ public class MainActivity extends AppCompatActivity {
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.w("Check", "Inside On Receiver");
-                Toast.makeText(getApplicationContext(), "UPDATE", Toast.LENGTH_LONG).show();
                 itemFragment.updateList();
             }
         };
