@@ -1,3 +1,8 @@
+// Joe Glass
+
+// JAV2 - C20201201
+
+// ItemFragment.java
 package com.joeglass.ce06;
 
 import android.content.Context;
@@ -8,11 +13,14 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-import com.joeglass.ce06.dummy.DummyContent;
+import java.io.File;
+import java.util.Objects;
 
 /**
  * A fragment representing a list of Items.
@@ -24,6 +32,11 @@ public class ItemFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 2;
 
+    View view;
+    File[] files;
+    MyItemRecyclerViewAdapter adapter;
+    RecyclerView recyclerView;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -32,7 +45,6 @@ public class ItemFragment extends Fragment {
     }
 
     // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
     public static ItemFragment newInstance(int columnCount) {
         ItemFragment fragment = new ItemFragment();
         Bundle args = new Bundle();
@@ -53,19 +65,51 @@ public class ItemFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item_list, container, false);
+        view = inflater.inflate(R.layout.fragment_item_list, container, false);
+        return view;
+    }
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
+    public File[] getImageFiles(){
+        File filePath = Objects.requireNonNull(getContext()).getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (filePath.exists()){
+            if (Objects.requireNonNull(filePath.listFiles()).length>0){
+               return  filePath.listFiles();
+            }
+
+        }
+        return null;
+    }
+
+
+
+    public void setAdapter( File[] files){
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            TextView textView = view.findViewById(R.id.label);
+            textView.setVisibility(View.INVISIBLE);
+            recyclerView = view.findViewById(R.id.list);
+            recyclerView.setVisibility(View.VISIBLE);
+
+            adapter = new MyItemRecyclerViewAdapter(files,context);
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS));
+            recyclerView.setAdapter(adapter);
+
+    }
+
+    public void updateList(){
+        if (files == null){
+            files = getImageFiles();
+
+            if (files != null){
+                setAdapter(files);
+            }
+        }else {
+
+            adapter = new MyItemRecyclerViewAdapter(getImageFiles(),view.getContext());
+            recyclerView.setAdapter(adapter);
         }
-        return view;
     }
 }
