@@ -1,3 +1,8 @@
+// Joe Glass
+
+// JAV2 - C20201201
+
+// MainActivity.java
 package com.joeglass.ce06;
 
 import androidx.annotation.NonNull;
@@ -12,13 +17,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
-import android.widget.Toast;
-import android.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity {
 

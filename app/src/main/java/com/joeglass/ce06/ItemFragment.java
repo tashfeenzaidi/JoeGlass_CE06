@@ -1,3 +1,8 @@
+// Joe Glass
+
+// JAV2 - C20201201
+
+// ItemFragment.java
 package com.joeglass.ce06;
 
 import android.content.Context;
@@ -9,20 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Environment;
-import android.os.ParcelUuid;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.joeglass.ce06.dummy.DummyContent;
-
 import java.io.File;
-import java.net.FileNameMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 /**

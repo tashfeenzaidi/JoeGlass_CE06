@@ -1,10 +1,15 @@
+// Joe Glass
+
+// JAV2 - C20201201
+
+// ImageDownloaderService.java
 package com.joeglass.ce06;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.FileUtils;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -13,16 +18,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.FileNameMap;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Objects;
 
+@SuppressWarnings({"deprecation", "ResultOfMethodCallIgnored"})
 public class ImageDownloaderService extends Service {
 
-    private final String URL_BASE = "https://i.imgur.com/";
-    private final String APP_NAME = "JoeGlass_CE06";
     public static File storageDir ;
     InputStream  inputStream = null;
     private final String[] IMAGES = {
@@ -68,11 +71,12 @@ public class ImageDownloaderService extends Service {
         return START_NOT_STICKY;
     }
 
+    @SuppressLint("StaticFieldLeak")
     public void downloadImage(String imageName) throws IOException {
 
 
         String name = imageName.substring(0, imageName.lastIndexOf('.'));
-        for (File path:storageDir.listFiles()){
+        for (File path: Objects.requireNonNull(storageDir.listFiles())){
             String pathName = path.getName();
             pathName = pathName.substring(0,pathName.indexOf("."));
             if (pathName.equals(name)){
@@ -84,7 +88,8 @@ public class ImageDownloaderService extends Service {
 
         File file = new File(storageDir+"/"+name +".txt");
 
-        URL url = new URL(URL_BASE+imageName);
+        String URL_BASE = "https://i.imgur.com/";
+        URL url = new URL(URL_BASE +imageName);
 
         if (!file.exists()){
 

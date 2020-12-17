@@ -1,3 +1,8 @@
+// Joe Glass
+
+// JAV2 - C20201201
+
+// MyItemRecyclerViewAdapter.java
 package com.joeglass.ce06;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -8,35 +13,26 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
-
-import com.joeglass.ce06.dummy.DummyContent.DummyItem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
 import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem}.
- * TODO: Replace the implementation with code for your data type.
- */
+@SuppressWarnings("NullableProblems")
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
     private final File[] mValues;
-    Context context;
+    final Context context;
 
     public MyItemRecyclerViewAdapter(File[] items,Context context) {
         mValues = items;
@@ -68,7 +64,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     }
 
     public Bitmap loadImageBitmap( File imageName) throws IOException {
-        Bitmap bitmap = null;
+        Bitmap bitmap;
         byte[] bytes = read(imageName);
         bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
         return bitmap;
@@ -82,7 +78,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             byte[] buffer = new byte[4096];
             ous = new ByteArrayOutputStream();
             ios = new FileInputStream(file);
-            int read = 0;
+            int read;
             while ((read = ios.read(buffer)) != -1) {
                 ous.write(buffer, 0, read);
             }
@@ -90,25 +86,23 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             try {
                 if (ous != null)
                     ous.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
 
             try {
                 if (ios != null)
                     ios.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
         return ous.toByteArray();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public final View mView;
         public final ImageView imageView;
 
         public ViewHolder(View view) {
             super(view);
-            mView = view;
             imageView =  view.findViewById(R.id.image);
             imageView.setOnClickListener(this);
         }
