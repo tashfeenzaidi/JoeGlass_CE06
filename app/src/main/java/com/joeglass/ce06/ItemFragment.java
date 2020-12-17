@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Environment;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,8 @@ import android.view.ViewGroup;
 import com.joeglass.ce06.dummy.DummyContent;
 
 import java.io.File;
+import java.net.FileNameMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +33,11 @@ public class ItemFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
     private int mColumnCount = 2;
+
+    View view;
+    File[] files;
+    MyItemRecyclerViewAdapter adapter;
+    RecyclerView recyclerView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -59,40 +67,51 @@ public class ItemFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-
-        getImageFiles(view);
+        view = inflater.inflate(R.layout.fragment_item_list, container, false);
         return view;
     }
 
-    public void getImageFiles(View view){
+    public File[] getImageFiles(){
         File filePath = Objects.requireNonNull(getContext()).getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         if (filePath.exists()){
-            File[] files =filePath.listFiles();
+            files = filePath.listFiles();
             assert files != null;
             if (files.length>0){
                 for (File file : files) {
                     Log.d("Files", "FileName:" + file.getName());
                 }
-                setAdapter(view,files);
+               return files;
             }
 
         }
-
-
+        return null;
     }
 
-    public void setAdapter(View view, File[] files){
-        if (view instanceof RecyclerView) {
+
+
+    public void setAdapter( File[] files){
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            recyclerView = view.findViewById(R.id.list);
+            recyclerView.setVisibility(View.VISIBLE);
+
+            adapter = new MyItemRecyclerViewAdapter(files,context);
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-//                recyclerView.addItemDecoration(new GridSpacingItemDecoration(0,0,false));
             }
-            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(files,getActivity()));
+            recyclerView.setAdapter(adapter);
+
+    }
+
+    public void updateList(){
+        if (files == null){
+            if (getImageFiles() != null){
+                setAdapter(getImageFiles());
+            }
+        }else {
+            getImageFiles();
+            adapter.notifyDataSetChanged();
         }
     }
 }

@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
+import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DummyItem}.
@@ -57,21 +58,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
         holder.imageView.setImageBitmap(ThumbnailUtils.extractThumbnail(bitmap,660,660));
-        Bitmap finalBitmap = bitmap;
-        holder.imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-
-                intent.setDataAndType(Uri.parse(MediaStore.Images.Media.insertImage(context.getContentResolver(), finalBitmap, null, null)), "image/*");
-                intent.setFlags(FLAG_GRANT_READ_URI_PERMISSION);
-                context.startActivity(intent);
-            }
-        });
 
     }
 
@@ -128,7 +115,16 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
         @Override
         public void onClick(View view) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.parse(MediaStore.Images.Media.insertImage(context.getContentResolver(), loadImageBitmap(mValues[getAdapterPosition()]), null, null)), "image/*");
+                intent.setFlags(FLAG_GRANT_READ_URI_PERMISSION);
+                intent.setFlags(FLAG_GRANT_WRITE_URI_PERMISSION);
+                context.startActivity(intent);
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

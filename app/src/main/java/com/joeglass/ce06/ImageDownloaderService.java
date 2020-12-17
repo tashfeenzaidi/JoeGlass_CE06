@@ -23,6 +23,7 @@ public class ImageDownloaderService extends Service {
 
     private final String URL_BASE = "https://i.imgur.com/";
     private final String APP_NAME = "JoeGlass_CE06";
+    public static File storageDir ;
     InputStream  inputStream = null;
     private final String[] IMAGES = {
             "Df9sV7x.jpg", "nqnegVs.jpg", "JDCG1tP.jpg",
@@ -45,32 +46,45 @@ public class ImageDownloaderService extends Service {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        storageDir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (!storageDir.exists()){
+            storageDir.mkdirs();
+        }
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         try {
-            downloadImage();
+            for (String imageName: IMAGES){
+                downloadImage(imageName);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
         return START_NOT_STICKY;
     }
 
-    public void downloadImage() throws IOException {
+    public void downloadImage(String imageName) throws IOException {
 
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-        if (!storageDir.exists()){
-            storageDir.mkdirs();
-        }
-        String name = IMAGES[0].substring(0, IMAGES[0].lastIndexOf('.'));
-        for (String path:storageDir.list()){
-            if (path.equals(name)){
+
+        String name = imageName.substring(0, imageName.lastIndexOf('.'));
+        for (File path:storageDir.listFiles()){
+            String pathName = path.getName();
+            pathName = pathName.substring(0,pathName.indexOf("."));
+            if (pathName.equals(name)){
+                Intent intent = new Intent("UPDATE");
+                sendBroadcast(intent);
                 return;
             }
         }
 
         File file = new File(storageDir+"/"+name +".txt");
 
-        URL url = new URL(URL_BASE+IMAGES[0]);
+        URL url = new URL(URL_BASE+imageName);
 
         if (!file.exists()){
 
