@@ -9,6 +9,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
+import androidx.work.Worker;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -21,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -67,7 +74,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.download){
-            registerService();
+//            registerService();
+
+            if (NetworkUtil.getNetworkStatus(this)){
+                initWorker();
+            }else {
+                Toast.makeText(this,"Please connect the internet ",Toast.LENGTH_SHORT).show();
+            }
             return true;
         }else {
             return super.onOptionsItemSelected(item);
@@ -78,6 +91,17 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this,ImageDownloaderService.class);
         startService(intent);
     }
+
+    public void initWorker(){
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        WorkRequest downloadWorkRequest = new OneTimeWorkRequest.Builder(ImageDownloadWorker.class)
+                .setConstraints(constraints)
+                .build();
+        WorkManager.getInstance(this).enqueue(downloadWorkRequest);
+    }
+
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
     public void requestRead() {
         if (ContextCompat.checkSelfPermission(this,
@@ -93,5 +117,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE){
+            if (grantResults.length < 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this,"You cannot",Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }

@@ -5,6 +5,8 @@
 // MyItemRecyclerViewAdapter.java
 package com.joeglass.ce06;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -28,7 +30,6 @@ import java.io.InputStream;
 import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
 import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
-@SuppressWarnings("NullableProblems")
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
     private final File[] mValues;
@@ -39,6 +40,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         this.context = context;
     }
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -47,7 +49,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         Bitmap bitmap = null;
         try {
             bitmap = loadImageBitmap(mValues[position]);
@@ -60,42 +62,13 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     @Override
     public int getItemCount() {
-        return mValues.length;
+        return mValues != null? mValues.length:0;
     }
 
     public Bitmap loadImageBitmap( File imageName) throws IOException {
         Bitmap bitmap;
-        byte[] bytes = read(imageName);
-        bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+        bitmap = BitmapFactory.decodeFile(imageName.toString());
         return bitmap;
-    }
-
-    public byte[] read(File file) throws IOException {
-
-        ByteArrayOutputStream ous = null;
-        InputStream ios = null;
-        try {
-            byte[] buffer = new byte[4096];
-            ous = new ByteArrayOutputStream();
-            ios = new FileInputStream(file);
-            int read;
-            while ((read = ios.read(buffer)) != -1) {
-                ous.write(buffer, 0, read);
-            }
-        }finally {
-            try {
-                if (ous != null)
-                    ous.close();
-            } catch (IOException ignored) {
-            }
-
-            try {
-                if (ios != null)
-                    ios.close();
-            } catch (IOException ignored) {
-            }
-        }
-        return ous.toByteArray();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -109,15 +82,12 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
         @Override
         public void onClick(View view) {
-            try {
+            Uri uri =  FileProvider.getUriForFile(context,BuildConfig.APPLICATION_ID+".provider",mValues[getAdapterPosition()]);
+            if (uri != null){
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.parse(MediaStore.Images.Media.insertImage(context.getContentResolver(), loadImageBitmap(mValues[getAdapterPosition()]), null, null)), "image/*");
+                intent.setDataAndType(uri, "image/*");
                 intent.setFlags(FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setFlags(FLAG_GRANT_WRITE_URI_PERMISSION);
                 context.startActivity(intent);
-
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }

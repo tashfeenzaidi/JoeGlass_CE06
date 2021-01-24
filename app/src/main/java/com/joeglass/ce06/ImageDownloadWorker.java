@@ -1,19 +1,14 @@
-// Joe Glass
-
-// JAV2 - C20201201
-
-// ImageDownloaderService.java
 package com.joeglass.ce06;
 
 import android.annotation.SuppressLint;
-import android.app.IntentService;
-import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.IBinder;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,10 +19,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Objects;
 
-public class ImageDownloaderService extends IntentService {
+public class ImageDownloadWorker extends Worker {
 
     public static File storageDir ;
-    InputStream  inputStream = null;
+    Context context;
+    InputStream inputStream = null;
     private final String[] IMAGES = {
             "Df9sV7x.jpg", "nqnegVs.jpg", "JDCG1tP.jpg",
             "tUvlwvB.jpg", "2bTEbC5.jpg", "Jnqn9NJ.jpg",
@@ -42,18 +38,17 @@ public class ImageDownloaderService extends IntentService {
     };
 
 
-    public ImageDownloaderService() {
-        super(null);
+    public ImageDownloadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
+        storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        this.context = context;
     }
 
-
+    @NonNull
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-
+    public Result doWork() {
 
         try {
-
-            storageDir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
             if (!storageDir.exists()){
                 storageDir.mkdirs();
             }
@@ -65,9 +60,11 @@ public class ImageDownloaderService extends IntentService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
-    @SuppressLint("StaticFieldLeak")
+
     public void downloadImage(String imageName) throws IOException {
 
 
@@ -77,12 +74,12 @@ public class ImageDownloaderService extends IntentService {
             pathName = pathName.substring(0,pathName.indexOf("."));
             if (pathName.equals(name)){
                 Intent intent = new Intent("UPDATE");
-                sendBroadcast(intent);
+                context.sendBroadcast(intent);
                 return;
             }
         }
 
-        File file = new File(storageDir+"/"+name +".txt");
+        File file = new File(storageDir+"/"+name +".jpeg");
 
         String URL_BASE = "https://i.imgur.com/";
         URL url = new URL(URL_BASE +imageName);
@@ -93,47 +90,32 @@ public class ImageDownloaderService extends IntentService {
 
             HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
             httpURLConnection.setRequestMethod("GET");
+            try {
+                httpURLConnection.connect();
 
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... voids) {
-                    try {
-                        httpURLConnection.connect();
-
-                        if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
-                            inputStream = httpURLConnection.getInputStream();
-                        }
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                    try {
-                        FileOutputStream fos = new FileOutputStream(file);
-                        int size = 4096;
-                        byte[] buf = new byte[size];
-                        int byteRead;
-                        if(inputStream != null){
-
-                            while (((byteRead = inputStream.read(buf)) != -1)) {
-                                fos.write(buf, 0, byteRead);
-                            }
-                        }
-                        fos.close();
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                    return null;
+                if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    inputStream = httpURLConnection.getInputStream();
                 }
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+            try {
+                FileOutputStream fos = new FileOutputStream(file);
+                int size = 4096;
+                byte[] buf = new byte[size];
+                int byteRead;
+                if(inputStream != null){
 
-                @Override
-                protected void onPostExecute(Void aVoid) {
-                    super.onPostExecute(aVoid);
-
-                    Intent intent = new Intent("UPDATE");
-                    sendBroadcast(intent);
-
+                    while (((byteRead = inputStream.read(buf)) != -1)) {
+                        fos.write(buf, 0, byteRead);
+                    }
                 }
-            }.execute();
-
+                fos.close();
+                Intent intent = new Intent("UPDATE");
+                context.sendBroadcast(intent);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
 
         }
 

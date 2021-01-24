@@ -4,7 +4,6 @@
     package="com.joeglass.ce06">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
@@ -15,13 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.JoeGlass_CE06"
         android:largeHeap="true"
-
         tools:ignore="AllowBackup">
-
-        <service
-            android:name=".ImageDownloaderService"
-            android:enabled="true"
-            android:exported="false"/>
 
         <activity android:name=".MainActivity"
             android:screenOrientation="portrait">
@@ -33,6 +26,19 @@
             </intent-filter>
 
         </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
+        <service android:name=".ImageDownloaderService"
+            android:exported="false"/>
     </application>
 
 </manifest>
