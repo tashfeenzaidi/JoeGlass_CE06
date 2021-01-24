@@ -3,18 +3,17 @@
 // JAV2 - C20201201
 
 // MainActivity.java
-package com.joeglass.ce06;
+package com.joeglass.ce06.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.work.Constraints;
+import androidx.work.Data;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
-import androidx.work.Worker;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -23,29 +22,41 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.joeglass.ce06.workers.ImageDownloadWorker;
+import com.joeglass.ce06.fragments.ItemFragment;
+import com.joeglass.ce06.R;
+import com.joeglass.ce06.utilities.NetworkUtil;
+import com.joeglass.ce06.utilities.PermissionUtil;
+
+import java.io.File;
+import java.util.Objects;
+
+import static com.joeglass.ce06.constants.Constants.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int CONTENT_VIEW_ID = 10101010;
     ItemFragment itemFragment;
-
+    public File filePath ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        filePath = Objects.requireNonNull(getExternalFilesDir(Environment.DIRECTORY_PICTURES));
         FrameLayout frameLayout = new FrameLayout(this);
         frameLayout.setId(CONTENT_VIEW_ID);
         setContentView(frameLayout, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
         if (savedInstanceState == null){
-            itemFragment =  ItemFragment.newInstance(2);
+            itemFragment =  ItemFragment.newInstance(2,filePath.getAbsolutePath());
             getSupportFragmentManager().beginTransaction().add(CONTENT_VIEW_ID,itemFragment).commit();
 
         }
@@ -74,12 +85,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.download){
-//            registerService();
-
-            if (NetworkUtil.getNetworkStatus(this)){
-                initWorker();
-            }else {
+            if (!NetworkUtil.getNetworkStatus(this)){
                 Toast.makeText(this,"Please connect the internet ",Toast.LENGTH_SHORT).show();
+            }else if (PermissionUtil.permissionStatus(this)){
+                requestRead();
+            }else {
+                initWorker();
             }
             return true;
         }else {
@@ -87,27 +98,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void registerService(){
-        Intent intent = new Intent(this,ImageDownloaderService.class);
-        startService(intent);
-    }
-
     public void initWorker(){
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
+        Data myData = new Data.Builder()
+                .putString("file_dir",filePath.getAbsolutePath())
+                .build();
         WorkRequest downloadWorkRequest = new OneTimeWorkRequest.Builder(ImageDownloadWorker.class)
                 .setConstraints(constraints)
+                .setInputData(myData)
                 .build();
         WorkManager.getInstance(this).enqueue(downloadWorkRequest);
     }
 
-    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
-    public void requestRead() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
 
+    public void requestRead() {
+        if (PermissionUtil.permissionStatus(this)) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);

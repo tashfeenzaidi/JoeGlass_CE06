@@ -1,28 +1,31 @@
-package com.joeglass.ce06;
+// Joe Glass
 
-import android.annotation.SuppressLint;
+// JAV2 - C20201201
+
+// ImageDownloadWorker.java
+package com.joeglass.ce06.workers;
+
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Environment;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.joeglass.ce06.constants.Constants;
+import com.joeglass.ce06.utilities.FileUtil;
+import com.joeglass.ce06.utilities.NetworkUtil;
+
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Objects;
 
 public class ImageDownloadWorker extends Worker {
 
-    public static File storageDir ;
-    Context context;
+    public File storageDir ;
+    final Context context;
     InputStream inputStream = null;
     private final String[] IMAGES = {
             "Df9sV7x.jpg", "nqnegVs.jpg", "JDCG1tP.jpg",
@@ -40,7 +43,6 @@ public class ImageDownloadWorker extends Worker {
 
     public ImageDownloadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-        storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         this.context = context;
     }
 
@@ -48,25 +50,27 @@ public class ImageDownloadWorker extends Worker {
     @Override
     public Result doWork() {
 
+        storageDir = new File(getInputData().getString("file_dir"));
+
         try {
             if (!storageDir.exists()){
-                storageDir.mkdirs();
+                if (!FileUtil.makeDir(storageDir)){
+                    return Result.failure();
+                }
             }
-
             for (String imageName: IMAGES){
                 downloadImage(imageName);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            return Result.retry();
         }
 
-        return null;
+        return Result.success();
     }
 
-
     public void downloadImage(String imageName) throws IOException {
-
 
         String name = imageName.substring(0, imageName.lastIndexOf('.'));
         for (File path: Objects.requireNonNull(storageDir.listFiles())){
@@ -79,44 +83,18 @@ public class ImageDownloadWorker extends Worker {
             }
         }
 
-        File file = new File(storageDir+"/"+name +".jpeg");
-
-        String URL_BASE = "https://i.imgur.com/";
-        URL url = new URL(URL_BASE +imageName);
+        File file = FileUtil.getJpgFile(storageDir+"/"+name);
+        URL url = new URL(Constants.URL_BASE +imageName);
 
         if (!file.exists()){
-
-            URLConnection urlConnection = url.openConnection();
-
-            HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
-            httpURLConnection.setRequestMethod("GET");
             try {
-                httpURLConnection.connect();
-
-                if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
-                    inputStream = httpURLConnection.getInputStream();
-                }
-            }catch (IOException e){
-                e.printStackTrace();
-            }
-            try {
-                FileOutputStream fos = new FileOutputStream(file);
-                int size = 4096;
-                byte[] buf = new byte[size];
-                int byteRead;
-                if(inputStream != null){
-
-                    while (((byteRead = inputStream.read(buf)) != -1)) {
-                        fos.write(buf, 0, byteRead);
-                    }
-                }
-                fos.close();
+                inputStream = NetworkUtil.networkCall(url);
+                FileUtil.fileInput(file,inputStream);
                 Intent intent = new Intent("UPDATE");
                 context.sendBroadcast(intent);
             }catch (IOException e){
                 e.printStackTrace();
             }
-
         }
 
     }

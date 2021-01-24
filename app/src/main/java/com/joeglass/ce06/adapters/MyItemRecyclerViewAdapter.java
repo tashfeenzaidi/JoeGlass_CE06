@@ -3,7 +3,7 @@
 // JAV2 - C20201201
 
 // MyItemRecyclerViewAdapter.java
-package com.joeglass.ce06;
+package com.joeglass.ce06.adapters;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
@@ -15,20 +15,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import java.io.ByteArrayOutputStream;
+import com.joeglass.ce06.R;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
-import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+import static com.joeglass.ce06.constants.Constants.AUTHORITY;
 
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
@@ -50,14 +47,11 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        Bitmap bitmap = null;
-        try {
-            bitmap = loadImageBitmap(mValues[position]);
-        } catch (IOException e) {
-            e.printStackTrace();
+        Bitmap bitmap;
+        bitmap = loadImageBitmap(mValues[position]);
+        if (bitmap != null){
+            holder.imageView.setImageBitmap(ThumbnailUtils.extractThumbnail(bitmap,660,660));
         }
-        holder.imageView.setImageBitmap(ThumbnailUtils.extractThumbnail(bitmap,660,660));
-
     }
 
     @Override
@@ -65,7 +59,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         return mValues != null? mValues.length:0;
     }
 
-    public Bitmap loadImageBitmap( File imageName) throws IOException {
+    public Bitmap loadImageBitmap( File imageName){
         Bitmap bitmap;
         bitmap = BitmapFactory.decodeFile(imageName.toString());
         return bitmap;
@@ -82,7 +76,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
         @Override
         public void onClick(View view) {
-            Uri uri =  FileProvider.getUriForFile(context,BuildConfig.APPLICATION_ID+".provider",mValues[getAdapterPosition()]);
+            Uri uri =  FileProvider.getUriForFile(context,AUTHORITY,mValues[getAdapterPosition()]);
             if (uri != null){
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setDataAndType(uri, "image/*");
