@@ -24,6 +24,8 @@ import com.joeglass.ce06.utilities.FileUtil;
 
 import java.io.File;
 
+import static com.joeglass.ce06.constants.Constants.FILE_KEY;
+
 /**
  * A fragment representing a list of Items.
  */
@@ -44,7 +46,7 @@ public class ItemFragment extends Fragment {
     public static ItemFragment newInstance(int columnCount,String filePath) {
         ItemFragment fragment = new ItemFragment();
         Bundle args = new Bundle();
-        args.putString("file_path",filePath);
+        args.putString(FILE_KEY,filePath);
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
         return fragment;
@@ -56,7 +58,7 @@ public class ItemFragment extends Fragment {
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
-            filePath = new File(getArguments().getString("file_path"));
+            filePath = new File(getArguments().getString(FILE_KEY));
         }
     }
 

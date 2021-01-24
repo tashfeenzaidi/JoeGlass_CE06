@@ -38,6 +38,8 @@ import com.joeglass.ce06.utilities.PermissionUtil;
 import java.io.File;
 import java.util.Objects;
 
+import static com.joeglass.ce06.constants.Constants.FILE_KEY;
+import static com.joeglass.ce06.constants.Constants.INTENT_ACTION;
 import static com.joeglass.ce06.constants.Constants.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity {
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("UPDATE");
+        intentFilter.addAction(INTENT_ACTION);
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (item.getItemId() == R.id.download){
             if (!NetworkUtil.getNetworkStatus(this)){
-                Toast.makeText(this,"Please connect the internet ",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,getString(R.string.internet_warning) ,Toast.LENGTH_SHORT).show();
             }else if (PermissionUtil.permissionStatus(this)){
                 requestRead();
             }else {
@@ -103,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
         Data myData = new Data.Builder()
-                .putString("file_dir",filePath.getAbsolutePath())
+                .putString(FILE_KEY,filePath.getAbsolutePath())
                 .build();
         WorkRequest downloadWorkRequest = new OneTimeWorkRequest.Builder(ImageDownloadWorker.class)
                 .setConstraints(constraints)
@@ -125,8 +127,8 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE){
-            if (grantResults.length < 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(this,"You cannot",Toast.LENGTH_LONG).show();
+            if (grantResults.length < 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this,getString(R.string.read_warning),Toast.LENGTH_LONG).show();
             }
         }
     }
