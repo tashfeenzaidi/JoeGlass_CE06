@@ -2,4 +2,6 @@
     <string name="app_name">JAV2 CE06 Download Service</string>
     <string name="please_download_images">Please Download Images</string>
     <string name="download">Download</string>
+    <string name="internet_warning">\"Please connect the internet \"</string>
+    <string name="read_warning">Please allow files access</string>
 </resources>

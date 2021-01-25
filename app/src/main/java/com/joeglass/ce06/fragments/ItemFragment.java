@@ -3,7 +3,7 @@
 // JAV2 - C20201201
 
 // ItemFragment.java
-package com.joeglass.ce06;
+package com.joeglass.ce06.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -13,41 +13,40 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.joeglass.ce06.adapters.MyItemRecyclerViewAdapter;
+import com.joeglass.ce06.R;
+import com.joeglass.ce06.utilities.FileUtil;
+
 import java.io.File;
-import java.util.Objects;
+
+import static com.joeglass.ce06.constants.Constants.FILE_KEY;
 
 /**
  * A fragment representing a list of Items.
  */
 public class ItemFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
     private int mColumnCount = 2;
 
     View view;
     File[] files;
+    File filePath;
     MyItemRecyclerViewAdapter adapter;
     RecyclerView recyclerView;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public ItemFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    public static ItemFragment newInstance(int columnCount) {
+    public static ItemFragment newInstance(int columnCount,String filePath) {
         ItemFragment fragment = new ItemFragment();
         Bundle args = new Bundle();
+        args.putString(FILE_KEY,filePath);
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
         return fragment;
@@ -59,6 +58,7 @@ public class ItemFragment extends Fragment {
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            filePath = new File(getArguments().getString(FILE_KEY));
         }
     }
 
@@ -68,19 +68,6 @@ public class ItemFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_item_list, container, false);
         return view;
     }
-
-    public File[] getImageFiles(){
-        File filePath = Objects.requireNonNull(getContext()).getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-        if (filePath.exists()){
-            if (Objects.requireNonNull(filePath.listFiles()).length>0){
-               return  filePath.listFiles();
-            }
-
-        }
-        return null;
-    }
-
-
 
     public void setAdapter( File[] files){
             Context context = view.getContext();
@@ -101,15 +88,16 @@ public class ItemFragment extends Fragment {
 
     public void updateList(){
         if (files == null){
-            files = getImageFiles();
+            files = FileUtil.getFlies(filePath);
 
             if (files != null){
                 setAdapter(files);
             }
         }else {
-
-            adapter = new MyItemRecyclerViewAdapter(getImageFiles(),view.getContext());
-            recyclerView.setAdapter(adapter);
+            if (FileUtil.getFlies(filePath) != null){
+                adapter = new MyItemRecyclerViewAdapter(FileUtil.getFlies(filePath),view.getContext());
+                recyclerView.setAdapter(adapter);
+            }
         }
     }
 }
